@@ -5,7 +5,7 @@
 #include <iostream>
 #include "api.h"
 
-class NETWORK_API Network {
+class Network {
 	struct InputNode {
 		float current_value;
 		std::vector<float> weights;
@@ -76,9 +76,9 @@ class NETWORK_API Network {
 	Network(std::vector<InputNode> _input_nodes, std::vector<MiddleNode> _middle_nodes, std::vector<OutputNode> _output_nodes);
 
 public:
-	Network();
+	NETWORK_API Network();
 
-	static Network createRandom(unsigned int input_node_count, unsigned int middle_node_count, unsigned int output_node_count);
+	NETWORK_API static Network createRandom(unsigned int input_node_count, unsigned int middle_node_count, unsigned int output_node_count);
 
 	friend std::ostream& operator<<(std::ostream& out_stream, const InputNode& node);
 
@@ -96,21 +96,21 @@ public:
 
 	friend std::istream& operator>>(std::istream& in_stream, Network& net);
 
-	void save(std::string filename);
+	NETWORK_API void save(std::string filename);
 
-	static Network load(std::string filename);
+	NETWORK_API static Network load(std::string filename);
 
-	void randomize();
+	NETWORK_API void randomize();
 
-	void step();
+	NETWORK_API void step();
 
-	void beginThinking();
+	NETWORK_API void beginThinking();
 
-	void endThinking();
+	NETWORK_API void endThinking();
 
-	float getOutputAt(int index);
+	NETWORK_API float getOutputAt(int index);
 
-	void sendInputs(std::vector<float> inputs);
+	NETWORK_API void sendInputs(std::vector<float> inputs);
 
-	void mutate(float scale);
+	NETWORK_API void mutate(float scale);
 };
