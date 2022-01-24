@@ -159,12 +159,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="api.h" />
+    <ClInclude Include="dll_interface.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="helpers.h" />
-    <ClInclude Include="InputNode.h" />
-    <ClInclude Include="MiddleNode.h" />
     <ClInclude Include="Network.h" />
-    <ClInclude Include="OutputNode.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>

@@ -66,15 +66,15 @@ Network Network::createRandom(unsigned int input_node_count, unsigned int middle
 
 ostream& operator<<(ostream& out_stream, const Network& net){
 	out_stream << net.input_nodes_size << endl;
-	for (const InputNode& input_node : net.input_nodes) {
+	for (const Network::InputNode& input_node : net.input_nodes) {
 		out_stream << input_node << endl;
 	}
 	out_stream << net.middle_nodes_size << endl;
-	for (const MiddleNode& middle_node : net.middle_nodes) {
+	for (const Network::MiddleNode& middle_node : net.middle_nodes) {
 		out_stream << middle_node << endl;
 	}
 	out_stream << net.output_nodes_size << endl;
-	for (const OutputNode& output_node : net.output_nodes) {
+	for (const Network::OutputNode& output_node : net.output_nodes) {
 		out_stream << output_node << endl;
 	}
 	unsigned int outputs_size = net.outputs.size();
@@ -90,7 +90,7 @@ istream& operator>>(istream& in_stream, Network& net) {
 	in_stream >> net.input_nodes_size;
 	network_thread_lock.unlock();
 	for (unsigned int i = 0; i < net.input_nodes_size; i++) {
-		InputNode input_node;
+		Network::InputNode input_node;
 		in_stream >> input_node;
 		network_thread_lock.lock();
 		net.input_nodes.push_back(input_node);
@@ -100,7 +100,7 @@ istream& operator>>(istream& in_stream, Network& net) {
 	in_stream >> net.middle_nodes_size;
 	network_thread_lock.unlock();
 	for (unsigned int i = 0; i < net.middle_nodes_size; i++) {
-		MiddleNode middle_node;
+		Network::MiddleNode middle_node;
 		in_stream >> middle_node;
 		network_thread_lock.lock();
 		net.middle_nodes.push_back(middle_node);
@@ -110,13 +110,13 @@ istream& operator>>(istream& in_stream, Network& net) {
 	in_stream >> net.output_nodes_size;
 	network_thread_lock.unlock();
 	for (unsigned int i = 0; i < net.output_nodes_size; i++) {
-		OutputNode output_node;
+		Network::OutputNode output_node;
 		in_stream >> output_node;
 		network_thread_lock.lock();
 		net.output_nodes.push_back(output_node);
 		network_thread_lock.unlock();
 	}
-	for (OutputNode& output_node : net.output_nodes) {
+	for (Network::OutputNode& output_node : net.output_nodes) {
 		network_thread_lock.lock();
 		net.outputs.push_back(output_node.getCurrentValue());
 		network_thread_lock.unlock();

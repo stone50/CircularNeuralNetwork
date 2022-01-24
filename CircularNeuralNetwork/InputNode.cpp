@@ -1,23 +1,22 @@
 #include "pch.h"
 #include <mutex>
-#include "InputNode.h"
-#include "helpers.h"
+#include "Network.h"
 
 using namespace std;
 
 mutex input_node_thread_lock;
 
-InputNode::InputNode() :
+Network::InputNode::InputNode() :
 	current_value(0),
 	weights(vector<float>())
 {}
 
-InputNode::InputNode(float _current_value, vector<float> _weights) :
+Network::InputNode::InputNode(float _current_value, vector<float> _weights) :
 	current_value(_current_value),
 	weights(_weights)
 {}
 
-ostream& operator<<(ostream& out_stream, const InputNode& node) {
+ostream& operator<<(ostream& out_stream, const Network::InputNode& node) {
 	unsigned int weights_size = node.weights.size();
 	out_stream << node.current_value << endl << weights_size << endl;
 	for (unsigned int i = 0; i < weights_size - 1; i++) {
@@ -27,9 +26,9 @@ ostream& operator<<(ostream& out_stream, const InputNode& node) {
 	return out_stream;
 }
 
-istream& operator>>(istream& in_stream, InputNode& node) {
+istream& operator>>(istream& in_stream, Network::InputNode& node) {
 	input_node_thread_lock.lock();
-	node = InputNode();
+	node = Network::InputNode();
 	in_stream >> node.current_value;
 	input_node_thread_lock.unlock();
 	unsigned int weights_size;
@@ -44,13 +43,13 @@ istream& operator>>(istream& in_stream, InputNode& node) {
 	return in_stream;
 }
 
-void InputNode::setCurrentValue(float new_value) {
+void Network::InputNode::setCurrentValue(float new_value) {
 	input_node_thread_lock.lock();
 	current_value = sigmoid(new_value);
 	input_node_thread_lock.unlock();
 }
 
-void InputNode::randomize() {
+void Network::InputNode::randomize() {
 	input_node_thread_lock.lock();
 	current_value = random(-1, 1);
 	input_node_thread_lock.unlock();
@@ -62,15 +61,15 @@ void InputNode::randomize() {
 	}
 }
 
-float InputNode::getWeightAt(int index) {
+float Network::InputNode::getWeightAt(int index) {
 	return weights.at(index);
 }
 
-float InputNode::getCurrentValue() {
+float Network::InputNode::getCurrentValue() {
 	return current_value;
 }
 
-void InputNode::mutate(float scale) {
+void Network::InputNode::mutate(float scale) {
 	for (float& weight : weights) {
 		input_node_thread_lock.lock();
 		weight = clamp(weight + random(-scale, scale), -1, 1);
