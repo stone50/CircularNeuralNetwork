@@ -137,6 +137,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PostBuildEvent>
+      <Command>for /f "usebackq delims=" %%I in (`dir /b/s "$(UserProfile)\source\repos\$(TargetFileName)"`) do if not "$(TargetPath)"=="C:%%~pI$(TargetFileName)" (copy "$(TargetPath)" "%%~pI" &amp; echo Dll updated in C:%%~pI)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
