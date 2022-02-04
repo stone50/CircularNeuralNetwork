@@ -17,7 +17,7 @@ Network::InputNode::InputNode(float _current_value, vector<float> _weights) :
 {}
 
 ostream& operator<<(ostream& out_stream, const Network::InputNode& node) {
-	size_t weights_size = node.weights.size();
+	unsigned int weights_size = (unsigned int)node.weights.size();
 	out_stream << node.current_value << endl << weights_size << endl;
 	for (unsigned int i = 0; i < weights_size - 1; i++) {
 		out_stream << node.weights.at(i) << endl;
@@ -53,7 +53,7 @@ void Network::InputNode::randomize() {
 	input_node_thread_lock.lock();
 	current_value = random(-1, 1);
 	input_node_thread_lock.unlock();
-	size_t const weights_size = weights.size();
+	unsigned int const weights_size = (unsigned int)weights.size();
 	for (unsigned int i = 0; i < weights_size; i++) {
 		input_node_thread_lock.lock();
 		weights.at(i) = random(-1, 1);

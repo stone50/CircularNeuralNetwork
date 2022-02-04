@@ -20,9 +20,9 @@ Network::Network(vector<InputNode> _input_nodes, vector<MiddleNode> _middle_node
 	input_nodes(_input_nodes),
 	middle_nodes(_middle_nodes),
 	output_nodes(_output_nodes),
-	input_nodes_size(_input_nodes.size()),
-	middle_nodes_size(_middle_nodes.size()),
-	output_nodes_size(_output_nodes.size()),
+	input_nodes_size((unsigned int)_input_nodes.size()),
+	middle_nodes_size((unsigned int)_middle_nodes.size()),
+	output_nodes_size((unsigned int)_output_nodes.size()),
 	outputs(vector<float>()),
 	thinking(false)
 {
@@ -76,7 +76,7 @@ ostream& operator<<(ostream& out_stream, const Network& net){
 	for (const Network::OutputNode& output_node : net.output_nodes) {
 		out_stream << output_node << endl;
 	}
-	unsigned int outputs_size = net.outputs.size();
+	unsigned int outputs_size = (unsigned int)net.outputs.size();
 	for (unsigned int i = 0; i < outputs_size - 1; i++) {
 		out_stream << net.outputs.at(i) << endl;
 	}

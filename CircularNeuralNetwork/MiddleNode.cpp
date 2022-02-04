@@ -65,7 +65,7 @@ void Network::MiddleNode::randomize() {
 	current_value = random(-1, 1);
 	inputs = vector<float>();
 	middle_node_thread_lock.unlock();
-	unsigned int const weights_size = weights.size();
+	unsigned int weights_size = weights.size();
 	for (unsigned int i = 0; i < weights_size; i++) {
 		middle_node_thread_lock.lock();
 		weights.at(i) = random(-1, 1);
