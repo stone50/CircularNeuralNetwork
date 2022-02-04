@@ -150,6 +150,11 @@ void Network::randomize() {
 }
 
 void Network::step() {
+	// step() should not be called while the network is already thinking
+	if (thinking) {
+		return;
+	}
+
 	// input nodes send outputs
 	for (InputNode& input_node : input_nodes) {
 		for (unsigned int middle_node_index = 0; middle_node_index < middle_nodes_size; middle_node_index++) {
