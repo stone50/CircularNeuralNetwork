@@ -100,7 +100,7 @@
       <EnableUAC>false</EnableUAC>
     </Link>
     <PostBuildEvent>
-      <Command>for /f "usebackq delims=" %%I in (`dir /b/s "C:\Users\Stone Hobbs\source\repos\*$(TargetFileName)"`) do if not "$(TargetPath)"=="C:%%~pI$(TargetFileName)" (copy "$(TargetPath)" "%%~pI" &amp; echo Dll updated in C:%%~pI)</Command>
+      <Command>for /f "usebackq delims=" %%I in (`dir /b/s "$(USERPROFILE)\source\repos\*$(TargetFileName)"`) do if not "$(TargetPath)"=="C:%%~pI$(TargetFileName)" (copy "$(TargetPath)" "%%~pI" &amp; echo Dll updated in C:%%~pI)</Command>
       <Message>Copying dll file to local projects</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -110,7 +110,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;CIRCULARNEURALNETWORKDLL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;CIRCULARNEURALNETWORK_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
