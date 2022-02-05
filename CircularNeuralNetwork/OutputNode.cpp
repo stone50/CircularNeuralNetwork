@@ -12,6 +12,10 @@ Network::OutputNode::OutputNode() :
 	bias(0)
 {}
 
+Network::OutputNode::~OutputNode() {
+	inputs.~vector<float>();
+}
+
 Network::OutputNode::OutputNode(float _current_value, float _bias) :
 	current_value(_current_value),
 	inputs(vector<float>()),

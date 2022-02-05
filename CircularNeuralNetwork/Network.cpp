@@ -16,6 +16,13 @@ Network::Network() :
 	thinking(false)
 {}
 
+Network::~Network() {
+	input_nodes.~vector<InputNode>();
+	middle_nodes.~vector<MiddleNode>();
+	output_nodes.~vector<OutputNode>();
+	outputs.~vector<float>();
+}
+
 Network::Network(vector<InputNode> _input_nodes, vector<MiddleNode> _middle_nodes, vector<OutputNode> _output_nodes) :
 	input_nodes(_input_nodes),
 	middle_nodes(_middle_nodes),
@@ -149,18 +156,12 @@ void Network::randomize() {
 	}
 }
 
-void Network::step() {
-	// step() should not be called while the network is already thinking
-	if (thinking) {
-		return;
-	}
-
+void Network::stepBase() {
 	// input nodes send outputs
 	for (InputNode& input_node : input_nodes) {
 		for (unsigned int middle_node_index = 0; middle_node_index < middle_nodes_size; middle_node_index++) {
 			middle_nodes.at(middle_node_index).addInput(input_node.getCurrentValue() * input_node.getWeightAt(middle_node_index));
 		}
-		input_node.setCurrentValue(0);
 	}
 
 	// middle nodes send outputs
@@ -199,12 +200,21 @@ void Network::step() {
 	}
 }
 
+void Network::step() {
+	// stepBase() should not be called while the network is already thinking
+	if (thinking) {
+		return;
+	}
+
+	stepBase();
+}
+
 void Network::beginThinking() {
 	network_thread_lock.lock();
 	thinking = true;
 	network_thread_lock.unlock();
 	while (thinking) {
-		step();
+		stepBase();
 	}
 }
 
@@ -218,9 +228,9 @@ float Network::getOutputAt(int index) {
 	return outputs.at(index);
 }
 
-void Network::sendInputs(vector<float> inputs) {
+void Network::sendInputs(float inputs[]) {
 	for (unsigned int i = 0; i < input_nodes_size; i++) {
-		input_nodes.at(i).setCurrentValue(inputs.at(i));
+		input_nodes.at(i).setCurrentValue(inputs[i]);
 	}
 }
 

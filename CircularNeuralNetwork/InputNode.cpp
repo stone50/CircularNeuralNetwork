@@ -11,6 +11,10 @@ Network::InputNode::InputNode() :
 	weights(vector<float>())
 {}
 
+Network::InputNode::~InputNode() {
+	weights.~vector<float>();
+}
+
 Network::InputNode::InputNode(float _current_value, vector<float> _weights) :
 	current_value(_current_value),
 	weights(_weights)
