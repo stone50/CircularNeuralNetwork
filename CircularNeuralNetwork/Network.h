@@ -12,6 +12,8 @@ class Network {
 
 		InputNode();
 
+		~InputNode();
+
 		InputNode(float _current_value, std::vector<float> _weights);
 
 		void setCurrentValue(float new_value);
@@ -31,6 +33,8 @@ class Network {
 		float bias;
 
 		MiddleNode();
+
+		~MiddleNode();
 
 		MiddleNode(float _current_value, std::vector<float> _weights, float _bias);
 
@@ -53,6 +57,8 @@ class Network {
 		
 		OutputNode();
 
+		~OutputNode();
+
 		OutputNode(float _current_value, float _bias);
 
 		void calcCurrentValue();
@@ -74,9 +80,12 @@ class Network {
 	std::vector<float> outputs;
 	bool thinking;
 	Network(std::vector<InputNode> _input_nodes, std::vector<MiddleNode> _middle_nodes, std::vector<OutputNode> _output_nodes);
+	void stepBase();
 
 public:
 	NETWORK_API Network();
+
+	NETWORK_API ~Network();
 
 	NETWORK_API static Network createRandom(unsigned int input_node_count, unsigned int middle_node_count, unsigned int output_node_count);
 
@@ -110,7 +119,7 @@ public:
 
 	NETWORK_API float getOutputAt(int index);
 
-	NETWORK_API void sendInputs(std::vector<float> inputs);
+	NETWORK_API void sendInputs(float inputs[]);
 
 	NETWORK_API void mutate(float scale);
 };

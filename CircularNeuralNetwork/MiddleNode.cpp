@@ -13,6 +13,11 @@ Network::MiddleNode::MiddleNode() :
 	bias(0)
 {}
 
+Network::MiddleNode::~MiddleNode() {
+	inputs.~vector<float>();
+	weights.~vector<float>();
+}
+
 Network::MiddleNode::MiddleNode(float _current_value, vector<float> _weights, float _bias) :
 	current_value(_current_value),
 	inputs(vector<float>()),
