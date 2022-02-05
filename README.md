@@ -8,7 +8,7 @@ A circular neural network can be used either with a single thread or multiple th
 Single Thread
 ```
 #include <iostream>
-#inlcude "Network.h"
+#inlcude <CNeuralNet.h>
 
 using namespace std;
 
@@ -16,7 +16,8 @@ int main() {
   srand((unsigned int)time(NULL));
   
   Network net = Network::createRandom(1, 10, 1);
-  net.sendInputs(vector<float>{ 3.14 });
+  float inputs[] = { 3.14 };
+  net.sendInputs(inputs);
   net.step();
   
   cout << "Output: " << net.getOutputAt(0) << endl;
@@ -28,7 +29,7 @@ Multiple Threads
 #include <iostream>
 #include <thread>
 #include <Windows.h>
-#include "Network.h"
+#include <CNeuralNet.h>
 
 using namespace std;
 
@@ -39,7 +40,8 @@ int main() {
   thread thinking_thread([&]() {net.beginThinking()});
   
   for (int i = 0; i < 10; i++) {
-    net.sendInputs(vector<float>{ 3.14 });
+    float inputs[] = { 3.14 };
+    net.sendInputs(inputs);
     Sleep(10);
     cout << "Output: " << net.getOutputAt(0) << endl;
   }
