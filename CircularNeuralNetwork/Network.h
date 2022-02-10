@@ -105,9 +105,9 @@ public:
 
 	friend std::istream& operator>>(std::istream& in_stream, Network& net);
 
-	NETWORK_API void save(std::string filename);
+	NETWORK_API void save(const char* filename);
 
-	NETWORK_API static Network load(std::string filename);
+	NETWORK_API static bool load(const char* filename, Network& net);
 
 	NETWORK_API void randomize();
 

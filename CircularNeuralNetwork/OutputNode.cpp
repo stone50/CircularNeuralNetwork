@@ -28,10 +28,11 @@ ostream& operator<<(ostream& out_stream, const Network::OutputNode& node) {
 }
 
 istream& operator>>(istream& in_stream, Network::OutputNode& node) {
+	Network::OutputNode newNode = Network::OutputNode();
+	in_stream >> newNode.current_value;
+	in_stream >> newNode.bias;
 	output_node_thread_lock.lock();
-	node = Network::OutputNode();
-	in_stream >> node.current_value;
-	in_stream >> node.bias;
+	node = newNode;
 	output_node_thread_lock.unlock();
 	return in_stream;
 }

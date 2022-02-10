@@ -35,21 +35,18 @@ ostream& operator<<(ostream& out_stream, const Network::MiddleNode& node) {
 }
 
 istream& operator>>(istream& in_stream, Network::MiddleNode& node) {
-	middle_node_thread_lock.lock();
-	node = Network::MiddleNode();
-	in_stream >> node.current_value;
-	middle_node_thread_lock.unlock();
+	Network::MiddleNode newNode;
+	in_stream >> newNode.current_value;
 	unsigned int weights_size;
 	in_stream >> weights_size;
 	for (unsigned int i = 0; i < weights_size; i++) {
 		float weight;
 		in_stream >> weight;
-		middle_node_thread_lock.lock();
-		node.weights.push_back(weight);
-		middle_node_thread_lock.unlock();
+		newNode.weights.push_back(weight);
 	}
+	in_stream >> newNode.bias;
 	middle_node_thread_lock.lock();
-	in_stream >> node.bias;
+	node = newNode;
 	middle_node_thread_lock.unlock();
 	return in_stream;
 }

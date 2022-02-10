@@ -31,19 +31,18 @@ ostream& operator<<(ostream& out_stream, const Network::InputNode& node) {
 }
 
 istream& operator>>(istream& in_stream, Network::InputNode& node) {
-	input_node_thread_lock.lock();
-	node = Network::InputNode();
-	in_stream >> node.current_value;
-	input_node_thread_lock.unlock();
+	Network::InputNode newNode;
+	in_stream >> newNode.current_value;
 	unsigned int weights_size;
 	in_stream >> weights_size;
 	for (unsigned int i = 0; i < weights_size; i++) {
 		float weight;
 		in_stream >> weight;
-		input_node_thread_lock.lock();
-		node.weights.push_back(weight);
-		input_node_thread_lock.unlock();
+		newNode.weights.push_back(weight);
 	}
+	input_node_thread_lock.lock();
+	node = newNode;
+	input_node_thread_lock.unlock();
 	return in_stream;
 }
 
