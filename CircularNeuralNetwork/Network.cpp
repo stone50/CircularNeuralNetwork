@@ -91,57 +91,49 @@ ostream& operator<<(ostream& out_stream, const Network& net){
 }
 
 istream& operator>>(istream& in_stream, Network& net) {
-	network_thread_lock.lock();
-	net = Network();
-	in_stream >> net.input_nodes_size;
-	network_thread_lock.unlock();
-	for (unsigned int i = 0; i < net.input_nodes_size; i++) {
+	Network newNetwork;
+	in_stream >> newNetwork.input_nodes_size;
+	for (unsigned int i = 0; i < newNetwork.input_nodes_size; i++) {
 		Network::InputNode input_node;
 		in_stream >> input_node;
-		network_thread_lock.lock();
-		net.input_nodes.push_back(input_node);
-		network_thread_lock.unlock();
+		newNetwork.input_nodes.push_back(input_node);
 	}
-	network_thread_lock.lock();
-	in_stream >> net.middle_nodes_size;
-	network_thread_lock.unlock();
-	for (unsigned int i = 0; i < net.middle_nodes_size; i++) {
+	in_stream >> newNetwork.middle_nodes_size;
+	for (unsigned int i = 0; i < newNetwork.middle_nodes_size; i++) {
 		Network::MiddleNode middle_node;
 		in_stream >> middle_node;
-		network_thread_lock.lock();
-		net.middle_nodes.push_back(middle_node);
-		network_thread_lock.unlock();
+		newNetwork.middle_nodes.push_back(middle_node);
 	}
-	network_thread_lock.lock();
-	in_stream >> net.output_nodes_size;
-	network_thread_lock.unlock();
-	for (unsigned int i = 0; i < net.output_nodes_size; i++) {
+	in_stream >> newNetwork.output_nodes_size;
+	for (unsigned int i = 0; i < newNetwork.output_nodes_size; i++) {
 		Network::OutputNode output_node;
 		in_stream >> output_node;
-		network_thread_lock.lock();
-		net.output_nodes.push_back(output_node);
-		network_thread_lock.unlock();
+		newNetwork.output_nodes.push_back(output_node);
 	}
-	for (Network::OutputNode& output_node : net.output_nodes) {
-		network_thread_lock.lock();
-		net.outputs.push_back(output_node.getCurrentValue());
-		network_thread_lock.unlock();
+	for (Network::OutputNode& output_node : newNetwork.output_nodes) {
+		newNetwork.outputs.push_back(output_node.getCurrentValue());
 	}
+	network_thread_lock.lock();
+	net = newNetwork;
+	network_thread_lock.unlock();
 	return in_stream;
 }
 
-void Network::save(string filename) {
+void Network::save(const char* filename) {
 	ofstream file_stream(filename, ios::trunc);
 	file_stream << *this;
-	file_stream.close();
 }
 
-Network Network::load(string filename) {
+bool Network::load(const char* filename, Network& net) {
 	ifstream file_stream(filename);
-	Network net;
+
 	file_stream >> net;
-	file_stream.close();
-	return net;
+
+	if (!file_stream.good()) {
+		return false;
+	}
+
+	return true;
 }
 
 void Network::randomize() {
