@@ -11,8 +11,21 @@ Network::Network() :
 	input_nodes(vector<InputNode>()),
 	middle_nodes(vector<MiddleNode>()),
 	output_nodes(vector<OutputNode>()),
-	input_nodes_size(0), middle_nodes_size(0),
-	output_nodes_size(0), outputs(vector<float>()),
+	input_nodes_size(0),
+	middle_nodes_size(0),
+	output_nodes_size(0),
+	outputs(vector<float>()),
+	thinking(false)
+{}
+
+Network::Network(unsigned int input_node_count, unsigned int middle_node_count, unsigned int output_node_count) :
+	input_nodes(vector<InputNode>(input_node_count, InputNode(0, vector<float>(middle_node_count, 0)))),
+	middle_nodes(vector<MiddleNode>(middle_node_count, MiddleNode(0, vector<float>(middle_node_count + output_node_count - 1), 0))),
+	output_nodes(vector<OutputNode>(output_node_count, OutputNode(0, 0))),
+	input_nodes_size(input_node_count),
+	middle_nodes_size(middle_node_count),
+	output_nodes_size(output_node_count),
+	outputs(vector<float>(output_node_count, 0)),
 	thinking(false)
 {}
 
@@ -41,9 +54,9 @@ Network::Network(vector<InputNode> _input_nodes, vector<MiddleNode> _middle_node
 }
 
 Network Network::createRandom(unsigned int input_node_count, unsigned int middle_node_count, unsigned int output_node_count) {
-	vector<InputNode> random_input_nodes = vector<InputNode>();
+	vector<InputNode> random_input_nodes;
 	for (unsigned int input_node_index = 0; input_node_index < input_node_count; input_node_index++) {
-		vector<float> input_weights = vector<float>();
+		vector<float> input_weights;
 		for (unsigned int weight_index = 0; weight_index < middle_node_count; weight_index++) {
 			input_weights.push_back(random(-1, 1));
 		}
@@ -51,9 +64,9 @@ Network Network::createRandom(unsigned int input_node_count, unsigned int middle
 		random_input_nodes.push_back(InputNode(random(-1, 1), input_weights));
 	}
 
-	vector<MiddleNode> random_middle_nodes = vector<MiddleNode>();
+	vector<MiddleNode> random_middle_nodes;
 	for (unsigned int middle_node_index = 0; middle_node_index < middle_node_count; middle_node_index++) {
-		vector<float> middle_weights = vector<float>();
+		vector<float> middle_weights;
 		unsigned int weight_count = middle_node_count + output_node_count - 1;
 		for (unsigned int weight_index = 0; weight_index < weight_count; weight_index++) {
 			middle_weights.push_back(random(-1, 1));
@@ -62,7 +75,7 @@ Network Network::createRandom(unsigned int input_node_count, unsigned int middle
 		random_middle_nodes.push_back(MiddleNode(random(-1, 1), middle_weights, random(-1, 1)));
 	}
 
-	vector<OutputNode> random_output_nodes = vector<OutputNode>();
+	vector<OutputNode> random_output_nodes;
 	for (unsigned int output_node_index = 0; output_node_index < output_node_count; output_node_index++) {
 		random_output_nodes.push_back(OutputNode(random(-1, 1), random(-1, 1)));
 	}
@@ -129,11 +142,7 @@ bool Network::load(const char* filename, Network& net) {
 
 	file_stream >> net;
 
-	if (!file_stream.good()) {
-		return false;
-	}
-
-	return true;
+	return file_stream.good();
 }
 
 void Network::randomize() {

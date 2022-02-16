@@ -85,6 +85,8 @@ class Network {
 public:
 	NETWORK_API Network();
 
+	NETWORK_API Network(unsigned int input_node_count, unsigned int middle_node_count, unsigned int output_node_count);
+
 	NETWORK_API ~Network();
 
 	NETWORK_API static Network createRandom(unsigned int input_node_count, unsigned int middle_node_count, unsigned int output_node_count);
