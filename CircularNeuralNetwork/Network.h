@@ -14,60 +14,38 @@ class Network {
 
 		~InputNode();
 
-		InputNode(float _current_value, std::vector<float> _weights);
-
-		void setCurrentValue(float new_value);
+		InputNode(float _current_value, const std::vector<float>& _weights);
 
 		void randomize();
-
-		float getWeightAt(int index);
-
-		float getCurrentValue();
 
 		void mutate(float scale);
 	};
 	struct MiddleNode {
 		float current_value;
-		std::vector<float> inputs;
 		std::vector<float> weights;
 		float bias;
+		float inputSum;
 
 		MiddleNode();
 
 		~MiddleNode();
 
-		MiddleNode(float _current_value, std::vector<float> _weights, float _bias);
-
-		void calcCurrentValue();
+		MiddleNode(float _current_value, const std::vector<float>& _weights, float _bias);
 
 		void randomize();
-
-		void addInput(float input);
-
-		float getWeightAt(int index);
-
-		float getCurrentValue();
 
 		void mutate(float scale);
 	};
 	struct OutputNode {
 		float current_value;
-		std::vector<float> inputs;
 		float bias;
+		float inputSum;
 		
 		OutputNode();
 
-		~OutputNode();
-
 		OutputNode(float _current_value, float _bias);
 
-		void calcCurrentValue();
-
 		void randomize();
-
-		void addInput(float input);
-
-		float getCurrentValue();
 
 		void mutate(float scale);
 	};
@@ -79,8 +57,8 @@ class Network {
 	unsigned int output_nodes_size;
 	std::vector<float> outputs;
 	bool thinking;
-	Network(std::vector<InputNode> _input_nodes, std::vector<MiddleNode> _middle_nodes, std::vector<OutputNode> _output_nodes);
-	void stepBase();
+	Network(const std::vector<InputNode>& _input_nodes, const std::vector<MiddleNode>& _middle_nodes, const std::vector<OutputNode>& _output_nodes);
+	void threadedStep();
 
 public:
 	NETWORK_API Network();
@@ -107,21 +85,21 @@ public:
 
 	friend std::istream& operator>>(std::istream& in_stream, Network& net);
 
-	NETWORK_API void save(const char* filename);
+	NETWORK_API bool save(const char* filename);
 
 	NETWORK_API static bool load(const char* filename, Network& net);
 
-	NETWORK_API void randomize();
+	NETWORK_API bool randomize();
 
-	NETWORK_API void step();
+	NETWORK_API bool step();
 
 	NETWORK_API void beginThinking();
 
 	NETWORK_API void endThinking();
 
-	NETWORK_API float getOutputAt(int index);
+	NETWORK_API float* getOutputs();
 
-	NETWORK_API void sendInputs(float inputs[]);
+	NETWORK_API void sendInputs(const float inputs[]);
 
-	NETWORK_API void mutate(float scale);
+	NETWORK_API bool mutate(float scale);
 };

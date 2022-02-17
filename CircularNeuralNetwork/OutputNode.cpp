@@ -1,25 +1,18 @@
 #include "pch.h"
-#include <mutex>
 #include "Network.h"
 
 using namespace std;
 
-mutex output_node_thread_lock;
-
 Network::OutputNode::OutputNode() :
 	current_value(0),
-	inputs(vector<float>()),
-	bias(0)
+	bias(0),
+	inputSum(0)
 {}
-
-Network::OutputNode::~OutputNode() {
-	inputs.~vector<float>();
-}
 
 Network::OutputNode::OutputNode(float _current_value, float _bias) :
 	current_value(_current_value),
-	inputs(vector<float>()),
-	bias(_bias)
+	bias(_bias),
+	inputSum(_bias)
 {}
 
 ostream& operator<<(ostream& out_stream, const Network::OutputNode& node) {
@@ -28,46 +21,18 @@ ostream& operator<<(ostream& out_stream, const Network::OutputNode& node) {
 }
 
 istream& operator>>(istream& in_stream, Network::OutputNode& node) {
-	Network::OutputNode newNode = Network::OutputNode();
-	in_stream >> newNode.current_value;
-	in_stream >> newNode.bias;
-	output_node_thread_lock.lock();
-	node = newNode;
-	output_node_thread_lock.unlock();
+	in_stream >> node.current_value;
+	in_stream >> node.bias;
 	return in_stream;
 }
 
-void Network::OutputNode::calcCurrentValue() {
-	float sum = bias;
-	for (float input : inputs) {
-		sum += input;
-	}
-	output_node_thread_lock.lock();
-	current_value = sigmoid(sum);
-	inputs.clear();
-	output_node_thread_lock.unlock();
-}
-
 void Network::OutputNode::randomize() {
-	output_node_thread_lock.lock();
 	current_value = random(-1, 1);
-	inputs = vector<float>();
 	bias = random(-1, 1);
-	output_node_thread_lock.unlock();
-}
-
-void Network::OutputNode::OutputNode::addInput(float input) {
-	output_node_thread_lock.lock();
-	inputs.push_back(input);
-	output_node_thread_lock.unlock();
-}
-
-float Network::OutputNode::getCurrentValue() {
-	return current_value;
+	inputSum = bias;
 }
 
 void Network::OutputNode::mutate(float scale) {
-	output_node_thread_lock.lock();
 	bias = clamp(bias + random(-1, 1), -1, 1);
-	output_node_thread_lock.unlock();
+	inputSum = bias;
 }

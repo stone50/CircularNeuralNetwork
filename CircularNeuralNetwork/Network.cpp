@@ -36,7 +36,7 @@ Network::~Network() {
 	outputs.~vector<float>();
 }
 
-Network::Network(vector<InputNode> _input_nodes, vector<MiddleNode> _middle_nodes, vector<OutputNode> _output_nodes) :
+Network::Network(const vector<InputNode>& _input_nodes, const vector<MiddleNode>& _middle_nodes, const vector<OutputNode>& _output_nodes) :
 	input_nodes(_input_nodes),
 	middle_nodes(_middle_nodes),
 	output_nodes(_output_nodes),
@@ -47,9 +47,7 @@ Network::Network(vector<InputNode> _input_nodes, vector<MiddleNode> _middle_node
 	thinking(false)
 {
 	for (OutputNode& output_node : output_nodes) {
-		network_thread_lock.lock();
-		outputs.push_back(output_node.getCurrentValue());
-		network_thread_lock.unlock();
+		outputs.push_back(output_node.current_value);
 	}
 }
 
@@ -104,48 +102,52 @@ ostream& operator<<(ostream& out_stream, const Network& net){
 }
 
 istream& operator>>(istream& in_stream, Network& net) {
-	Network newNetwork;
-	in_stream >> newNetwork.input_nodes_size;
-	for (unsigned int i = 0; i < newNetwork.input_nodes_size; i++) {
+	in_stream >> net.input_nodes_size;
+	for (unsigned int i = 0; i < net.input_nodes_size; i++) {
 		Network::InputNode input_node;
 		in_stream >> input_node;
-		newNetwork.input_nodes.push_back(input_node);
+		net.input_nodes.push_back(input_node);
 	}
-	in_stream >> newNetwork.middle_nodes_size;
-	for (unsigned int i = 0; i < newNetwork.middle_nodes_size; i++) {
+	in_stream >> net.middle_nodes_size;
+	for (unsigned int i = 0; i < net.middle_nodes_size; i++) {
 		Network::MiddleNode middle_node;
 		in_stream >> middle_node;
-		newNetwork.middle_nodes.push_back(middle_node);
+		net.middle_nodes.push_back(middle_node);
 	}
-	in_stream >> newNetwork.output_nodes_size;
-	for (unsigned int i = 0; i < newNetwork.output_nodes_size; i++) {
+	in_stream >> net.output_nodes_size;
+	for (unsigned int i = 0; i < net.output_nodes_size; i++) {
 		Network::OutputNode output_node;
 		in_stream >> output_node;
-		newNetwork.output_nodes.push_back(output_node);
+		net.output_nodes.push_back(output_node);
 	}
-	for (Network::OutputNode& output_node : newNetwork.output_nodes) {
-		newNetwork.outputs.push_back(output_node.getCurrentValue());
+	for (Network::OutputNode& output_node : net.output_nodes) {
+		net.outputs.push_back(output_node.current_value);
 	}
-	network_thread_lock.lock();
-	net = newNetwork;
-	network_thread_lock.unlock();
 	return in_stream;
 }
 
-void Network::save(const char* filename) {
+bool Network::save(const char* filename) {
+	if (thinking) {
+		return false;
+	}
 	ofstream file_stream(filename, ios::trunc);
 	file_stream << *this;
+	return true;
 }
 
 bool Network::load(const char* filename, Network& net) {
+	if (net.thinking) {
+		return false;
+	}
 	ifstream file_stream(filename);
-
 	file_stream >> net;
-
 	return file_stream.good();
 }
 
-void Network::randomize() {
+bool Network::randomize() {
+	if (thinking) {
+		return false;
+	}
 	for (unsigned int i = 0; i < input_nodes_size; i++) {
 		input_nodes.at(i).randomize();
 	}
@@ -155,13 +157,18 @@ void Network::randomize() {
 	for (unsigned int i = 0; i < output_nodes_size; i++) {
 		output_nodes.at(i).randomize();
 	}
+	return true;
 }
 
-void Network::stepBase() {
+void Network::threadedStep() {
 	// input nodes send outputs
 	for (InputNode& input_node : input_nodes) {
 		for (unsigned int middle_node_index = 0; middle_node_index < middle_nodes_size; middle_node_index++) {
-			middle_nodes.at(middle_node_index).addInput(input_node.getCurrentValue() * input_node.getWeightAt(middle_node_index));
+			float& middleInputSum = middle_nodes.at(middle_node_index).inputSum;
+			float input = middleInputSum + (input_node.current_value * input_node.weights.at(middle_node_index));
+			network_thread_lock.lock();
+			middleInputSum = input;
+			network_thread_lock.unlock();
 		}
 	}
 
@@ -169,45 +176,102 @@ void Network::stepBase() {
 	for (unsigned int sender_index = 0; sender_index < middle_nodes_size; sender_index++) {
 		bool sender_reached = false;
 		MiddleNode sender = middle_nodes.at(sender_index);
-		float sender_current_value = sender.getCurrentValue();
 		for (unsigned int middle_node_index = 0; middle_node_index < middle_nodes_size; middle_node_index++) {
 			if (sender_index != middle_node_index) {
-				middle_nodes.at(middle_node_index).addInput(sender_current_value * sender.getWeightAt(middle_node_index - sender_reached));
+				float& middleInputSum = middle_nodes.at(middle_node_index).inputSum;
+				float input = middleInputSum + (sender.current_value * sender.weights.at(middle_node_index - sender_reached));
+				network_thread_lock.lock();
+				middleInputSum = input;
+				network_thread_lock.unlock();
 			}
 			else {
 				sender_reached = true;
 			}
 		}
 		for (unsigned int output_node_index = 0; output_node_index < output_nodes_size; output_node_index++) {
-			output_nodes.at(output_node_index).addInput(sender_current_value * sender.getWeightAt(output_node_index + middle_nodes_size - 1));
+			float& outputInputSum = output_nodes.at(output_node_index).inputSum;
+			float input = outputInputSum + (sender.current_value * sender.weights.at(output_node_index + middle_nodes_size - 1));
+			network_thread_lock.lock();
+			outputInputSum = input;
+			network_thread_lock.unlock();
 		}
 	}
 
 	// middle nodes calculate current value
 	for (MiddleNode& middle_node : middle_nodes) {
-		middle_node.calcCurrentValue();
+		float value = sigmoid(middle_node.inputSum);
+		network_thread_lock.lock();
+		middle_node.current_value = value;
+		middle_node.inputSum = middle_node.bias;
+		network_thread_lock.unlock();
 	}
 
 	// output nodes calculate current value
 	for (OutputNode& output_node : output_nodes) {
-		output_node.calcCurrentValue();
+		float value = sigmoid(output_node.inputSum);
+		network_thread_lock.lock();
+		output_node.current_value = value;
+		output_node.inputSum = output_node.bias;
+		network_thread_lock.unlock();
 	}
 
 	// replace elements of outputs using output_nodes
 	for (unsigned int output_index = 0; output_index < output_nodes_size; output_index++) {
+		float& outputValue = outputs.at(output_index);
+		float outputNodeValue = output_nodes.at(output_index).current_value;
 		network_thread_lock.lock();
-		outputs.at(output_index) = output_nodes.at(output_index).getCurrentValue();
+		outputValue = outputNodeValue;
 		network_thread_lock.unlock();
 	}
 }
 
-void Network::step() {
+bool Network::step() {
 	// stepBase() should not be called while the network is already thinking
 	if (thinking) {
-		return;
+		return false;
 	}
 
-	stepBase();
+	// input nodes send outputs
+	for (InputNode& input_node : input_nodes) {
+		for (unsigned int middle_node_index = 0; middle_node_index < middle_nodes_size; middle_node_index++) {
+			middle_nodes.at(middle_node_index).inputSum += input_node.current_value * input_node.weights.at(middle_node_index);
+		}
+	}
+
+	// middle nodes send outputs
+	for (unsigned int sender_index = 0; sender_index < middle_nodes_size; sender_index++) {
+		bool sender_reached = false;
+		MiddleNode sender = middle_nodes.at(sender_index);
+		for (unsigned int middle_node_index = 0; middle_node_index < middle_nodes_size; middle_node_index++) {
+			if (sender_index != middle_node_index) {
+				middle_nodes.at(middle_node_index).inputSum += sender.current_value * sender.weights.at(middle_node_index - sender_reached);
+			}
+			else {
+				sender_reached = true;
+			}
+		}
+		for (unsigned int output_node_index = 0; output_node_index < output_nodes_size; output_node_index++) {
+			output_nodes.at(output_node_index).inputSum += sender.current_value * sender.weights.at(output_node_index + middle_nodes_size - 1);
+		}
+	}
+
+	// middle nodes calculate current value
+	for (MiddleNode& middle_node : middle_nodes) {
+		middle_node.current_value = sigmoid(middle_node.inputSum);
+		middle_node.inputSum = middle_node.bias;
+	}
+
+	// output nodes calculate current value
+	for (OutputNode& output_node : output_nodes) {
+		output_node.current_value = sigmoid(output_node.inputSum);
+		output_node.inputSum = output_node.bias;
+	}
+
+	// replace elements of outputs using output_nodes
+	for (unsigned int output_index = 0; output_index < output_nodes_size; output_index++) {
+		outputs.at(output_index) = output_nodes.at(output_index).current_value;
+	}
+	return true;
 }
 
 void Network::beginThinking() {
@@ -215,7 +279,7 @@ void Network::beginThinking() {
 	thinking = true;
 	network_thread_lock.unlock();
 	while (thinking) {
-		stepBase();
+		threadedStep();
 	}
 }
 
@@ -225,17 +289,24 @@ void Network::endThinking() {
 	network_thread_lock.unlock();
 }
 
-float Network::getOutputAt(int index) {
-	return outputs.at(index);
+float* Network::getOutputs() {
+	return outputs.data();
 }
 
-void Network::sendInputs(float inputs[]) {
+void Network::sendInputs(const float inputs[]) {
 	for (unsigned int i = 0; i < input_nodes_size; i++) {
-		input_nodes.at(i).setCurrentValue(inputs[i]);
+		float& inputCurrentValue = input_nodes.at(i).current_value;
+		float newCurrentValue = sigmoid(inputs[i]);
+		network_thread_lock.lock();
+		inputCurrentValue = newCurrentValue;
+		network_thread_lock.unlock();
 	}
 }
 
-void Network::mutate(float scale) {
+bool Network::mutate(float scale) {
+	if (thinking) {
+		return false;
+	}
 	for (InputNode& input_node : input_nodes) {
 		input_node.mutate(scale);
 	}
@@ -245,4 +316,5 @@ void Network::mutate(float scale) {
 	for (OutputNode& output_node : output_nodes) {
 		output_node.mutate(scale);
 	}
+	return true;
 }
