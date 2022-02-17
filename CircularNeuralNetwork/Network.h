@@ -58,7 +58,7 @@ class Network {
 	std::vector<float> outputs;
 	bool thinking;
 	Network(const std::vector<InputNode>& _input_nodes, const std::vector<MiddleNode>& _middle_nodes, const std::vector<OutputNode>& _output_nodes);
-	void threadedStep();
+	void baseStep();
 
 public:
 	NETWORK_API Network();
@@ -93,7 +93,7 @@ public:
 
 	NETWORK_API bool step();
 
-	NETWORK_API void beginThinking();
+	NETWORK_API bool beginThinking();
 
 	NETWORK_API void endThinking();
 
