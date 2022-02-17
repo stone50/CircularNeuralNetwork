@@ -1,7 +1,4 @@
 #include "pch.h"
-#include <stdlib.h>
-#include <time.h>
-#include <math.h>
 
 float random(float min, float max) {
 	return (rand() * (max - min) / RAND_MAX) + min;

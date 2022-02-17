@@ -47,6 +47,8 @@ Network::Network(const vector<InputNode>& _input_nodes, const vector<MiddleNode>
 {}
 
 Network Network::createRandom(unsigned int input_node_count, unsigned int middle_node_count, unsigned int output_node_count) {
+	srand((unsigned int)time(NULL));
+	 
 	vector<InputNode> random_input_nodes;
 	random_input_nodes.reserve(input_node_count);
 	for (unsigned int input_node_index = 0; input_node_index < input_node_count; input_node_index++) {
@@ -139,6 +141,7 @@ bool Network::randomize() {
 	if (thinking) {
 		return false;
 	}
+	srand((unsigned int)time(NULL));
 	for (unsigned int i = 0; i < input_nodes_size; i++) {
 		input_nodes.at(i).randomize();
 	}
@@ -238,6 +241,7 @@ bool Network::mutate(float scale) {
 	if (thinking) {
 		return false;
 	}
+	srand((unsigned int)time(NULL));
 	for (InputNode& input_node : input_nodes) {
 		input_node.mutate(scale);
 	}
