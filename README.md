@@ -20,7 +20,7 @@ int main() {
   net.sendInputs(inputs);
   net.step();
   
-  cout << "Output: " << net.getOutputAt(0) << endl;
+  cout << "Output: " << net.getOutputs()[0] << endl;
   return 0;
 }
 ```
@@ -43,7 +43,7 @@ int main() {
     float inputs[] = { 3.14 };
     net.sendInputs(inputs);
     Sleep(10);
-    cout << "Output: " << net.getOutputAt(0) << endl;
+    cout << "Output: " << net.getOutputs()[0] << endl;
   }
   
   net.endThinking();
