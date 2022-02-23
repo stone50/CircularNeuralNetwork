@@ -10,16 +10,31 @@ Network::MiddleNode::MiddleNode() :
 	inputSum(0)
 {}
 
-Network::MiddleNode::~MiddleNode() {
-	weights.~vector<float>();
-}
+Network::MiddleNode::MiddleNode(const Network::MiddleNode& other) :
+	current_value(other.current_value),
+	weights(other.weights),
+	bias(other.bias),
+	inputSum(other.inputSum)
+{}
 
-Network::MiddleNode::MiddleNode(float _current_value, const vector<float>& _weights, float _bias) :
+Network::MiddleNode::MiddleNode(const float _current_value, const vector<float>& _weights, const float _bias) :
 	current_value(_current_value),
 	weights(_weights),
 	bias(_bias),
 	inputSum(_bias)
 {}
+
+Network::MiddleNode::~MiddleNode() {
+	weights.~vector<float>();
+}
+
+Network::MiddleNode& Network::MiddleNode::operator=(const MiddleNode& other) {
+	current_value = other.current_value;
+	weights = other.weights;
+	bias = other.bias;
+	inputSum = other.inputSum;
+	return *this;
+}
 
 ostream& operator<<(ostream& out_stream, const Network::MiddleNode& node) {
 	out_stream << node.current_value << endl << node.weights.size() << endl;
@@ -34,10 +49,9 @@ istream& operator>>(istream& in_stream, Network::MiddleNode& node) {
 	in_stream >> node.current_value;
 	unsigned int weights_size;
 	in_stream >> weights_size;
-	for (unsigned int i = 0; i < weights_size; i++) {
-		float weight;
+	node.weights = vector<float>(weights_size);
+	for (float& weight : node.weights) {
 		in_stream >> weight;
-		node.weights.push_back(weight);
 	}
 	in_stream >> node.bias;
 	return in_stream;
@@ -45,7 +59,7 @@ istream& operator>>(istream& in_stream, Network::MiddleNode& node) {
 
 void Network::MiddleNode::randomize() {
 	current_value = random(-1, 1);
-	unsigned int weights_size = (unsigned int)weights.size();
+	const unsigned int weights_size = (unsigned int)weights.size();
 	for (unsigned int i = 0; i < weights_size; i++) {
 		weights.at(i) = random(-1, 1);
 	}
@@ -53,7 +67,7 @@ void Network::MiddleNode::randomize() {
 	inputSum = bias;
 }
 
-void Network::MiddleNode::mutate(float scale) {
+void Network::MiddleNode::mutate(const float scale) {
 	for (float& weight : weights) {
 		weight = clamp(weight + random(-scale, scale), -1, 1);
 	}

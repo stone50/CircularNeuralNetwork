@@ -11,13 +11,17 @@ class Network {
 
 		InputNode();
 
+		InputNode(const InputNode& other);
+
+		InputNode(const float _current_value, const std::vector<float>& _weights);
+
 		~InputNode();
 
-		InputNode(float _current_value, const std::vector<float>& _weights);
+		InputNode& operator=(const InputNode& other);
 
 		void randomize();
 
-		void mutate(float scale);
+		void mutate(const float scale);
 	};
 	struct MiddleNode {
 		float current_value;
@@ -27,13 +31,17 @@ class Network {
 
 		MiddleNode();
 
+		MiddleNode(const MiddleNode& other);
+
+		MiddleNode(const float _current_value, const std::vector<float>& _weights, float _bias);
+
 		~MiddleNode();
 
-		MiddleNode(float _current_value, const std::vector<float>& _weights, float _bias);
+		MiddleNode& operator=(const MiddleNode& other);
 
 		void randomize();
 
-		void mutate(float scale);
+		void mutate(const float scale);
 	};
 	struct OutputNode {
 		float current_value;
@@ -42,11 +50,15 @@ class Network {
 		
 		OutputNode();
 
-		OutputNode(float _current_value, float _bias);
+		OutputNode(const OutputNode& other);
+
+		OutputNode(const float _current_value, const float _bias);
+
+		OutputNode& operator=(const OutputNode& other);
 
 		void randomize();
 
-		void mutate(float scale);
+		void mutate(const float scale);
 	};
 	std::vector<InputNode> input_nodes;
 	std::vector<MiddleNode> middle_nodes;
@@ -62,11 +74,13 @@ class Network {
 public:
 	NETWORK_API Network();
 
-	NETWORK_API Network(unsigned int input_node_count, unsigned int middle_node_count, unsigned int output_node_count);
+	NETWORK_API Network(const Network& other);
+
+	NETWORK_API Network(const unsigned int input_node_count, const unsigned int middle_node_count, const unsigned int output_node_count);
 
 	NETWORK_API ~Network();
 
-	NETWORK_API static Network createRandom(unsigned int input_node_count, unsigned int middle_node_count, unsigned int output_node_count);
+	NETWORK_API Network& operator=(const Network& other);
 
 	friend std::ostream& operator<<(std::ostream& out_stream, const InputNode& node);
 
@@ -84,6 +98,8 @@ public:
 
 	friend std::istream& operator>>(std::istream& in_stream, Network& net);
 
+	NETWORK_API static Network createRandom(const unsigned int input_node_count, const unsigned int middle_node_count, const unsigned int output_node_count);
+
 	NETWORK_API bool save(const char* filename);
 
 	NETWORK_API static bool load(const char* filename, Network& net);
@@ -100,5 +116,5 @@ public:
 
 	NETWORK_API void sendInputs(const float inputs[]);
 
-	NETWORK_API bool mutate(float scale);
+	NETWORK_API bool mutate(const float scale);
 };
