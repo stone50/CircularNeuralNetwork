@@ -18,7 +18,22 @@ Network::Network() :
 	thinking(false)
 {}
 
-Network::Network(unsigned int input_node_count, unsigned int middle_node_count, unsigned int output_node_count) :
+Network::Network(const Network& other) {
+	if (!other.thinking) {
+		input_nodes = other.input_nodes;
+		middle_nodes = other.middle_nodes;
+		output_nodes = other.output_nodes;
+		input_nodes_size = other.input_nodes_size;
+		middle_nodes_size = other.middle_nodes_size;
+		output_nodes_size = other.output_nodes_size;
+		outputs = other.outputs;
+		thinking = false;
+	} else {
+		*this = Network();
+	}
+}
+
+Network::Network(const unsigned int input_node_count, const unsigned int middle_node_count, const unsigned int output_node_count) :
 	input_nodes(vector<InputNode>(input_node_count, InputNode(0, vector<float>(middle_node_count)))),
 	middle_nodes(vector<MiddleNode>(middle_node_count, MiddleNode(0, vector<float>(middle_node_count + output_node_count - 1), 0))),
 	output_nodes(vector<OutputNode>(output_node_count)),
@@ -28,13 +43,6 @@ Network::Network(unsigned int input_node_count, unsigned int middle_node_count, 
 	outputs(vector<float>(output_node_count)),
 	thinking(false)
 {}
-
-Network::~Network() {
-	input_nodes.~vector<InputNode>();
-	middle_nodes.~vector<MiddleNode>();
-	output_nodes.~vector<OutputNode>();
-	outputs.~vector<float>();
-}
 
 Network::Network(const vector<InputNode>& _input_nodes, const vector<MiddleNode>& _middle_nodes, const vector<OutputNode>& _output_nodes) :
 	input_nodes(_input_nodes),
@@ -47,39 +55,25 @@ Network::Network(const vector<InputNode>& _input_nodes, const vector<MiddleNode>
 	thinking(false)
 {}
 
-Network Network::createRandom(unsigned int input_node_count, unsigned int middle_node_count, unsigned int output_node_count) {
-	srand((unsigned int)time(NULL));
-	 
-	vector<InputNode> random_input_nodes;
-	random_input_nodes.reserve(input_node_count);
-	for (unsigned int input_node_index = 0; input_node_index < input_node_count; input_node_index++) {
-		vector<float> input_weights(middle_node_count);
-		for (unsigned int weight_index = 0; weight_index < middle_node_count; weight_index++) {
-			input_weights.at(weight_index) = random(-1, 1);
-		}
+Network::~Network() {
+	input_nodes.~vector<InputNode>();
+	middle_nodes.~vector<MiddleNode>();
+	output_nodes.~vector<OutputNode>();
+	outputs.~vector<float>();
+}
 
-		random_input_nodes.push_back(InputNode(random(-1, 1), input_weights));
+Network& Network::operator=(const Network& other) {
+	if (!other.thinking) {
+		input_nodes = other.input_nodes;
+		middle_nodes = other.middle_nodes;
+		output_nodes = other.output_nodes;
+		input_nodes_size = other.input_nodes_size;
+		middle_nodes_size = other.middle_nodes_size;
+		output_nodes_size = other.output_nodes_size;
+		outputs = other.outputs;
+		thinking = false;
 	}
-
-	vector<MiddleNode> random_middle_nodes;
-	random_middle_nodes.reserve(middle_node_count);
-	for (unsigned int middle_node_index = 0; middle_node_index < middle_node_count; middle_node_index++) {
-		unsigned int weight_count = middle_node_count + output_node_count - 1;
-		vector<float> middle_weights(weight_count);
-		for (unsigned int weight_index = 0; weight_index < weight_count; weight_index++) {
-			middle_weights.at(weight_index) = random(-1, 1);
-		}
-
-		random_middle_nodes.push_back(MiddleNode(random(-1, 1), middle_weights, random(-1, 1)));
-	}
-
-	vector<OutputNode> random_output_nodes;
-	random_output_nodes.reserve(output_node_count);
-	for (unsigned int output_node_index = 0; output_node_index < output_node_count; output_node_index++) {
-		random_output_nodes.push_back(OutputNode(random(-1, 1), random(-1, 1)));
-	}
-
-	return Network(random_input_nodes, random_middle_nodes, random_output_nodes);
+	return *this;
 }
 
 ostream& operator<<(ostream& out_stream, const Network& net){
@@ -91,33 +85,63 @@ ostream& operator<<(ostream& out_stream, const Network& net){
 	for (const Network::MiddleNode& middle_node : net.middle_nodes) {
 		out_stream << middle_node << endl;
 	}
-	out_stream << net.output_nodes_size << endl;
+	out_stream << net.output_nodes_size;
 	for (const Network::OutputNode& output_node : net.output_nodes) {
-		out_stream << output_node << endl;
+		out_stream << endl << output_node;
 	}
 	return out_stream;
 }
 
 istream& operator>>(istream& in_stream, Network& net) {
 	in_stream >> net.input_nodes_size;
-	for (unsigned int i = 0; i < net.input_nodes_size; i++) {
-		Network::InputNode input_node;
+	net.input_nodes = vector<Network::InputNode>(net.input_nodes_size);
+	for (Network::InputNode& input_node : net.input_nodes) {
 		in_stream >> input_node;
-		net.input_nodes.push_back(input_node);
 	}
 	in_stream >> net.middle_nodes_size;
-	for (unsigned int i = 0; i < net.middle_nodes_size; i++) {
-		Network::MiddleNode middle_node;
+	net.middle_nodes = vector<Network::MiddleNode>(net.middle_nodes_size);
+	for (Network::MiddleNode& middle_node : net.middle_nodes) {
 		in_stream >> middle_node;
-		net.middle_nodes.push_back(middle_node);
 	}
 	in_stream >> net.output_nodes_size;
-	for (unsigned int i = 0; i < net.output_nodes_size; i++) {
-		Network::OutputNode output_node;
+	net.output_nodes = vector<Network::OutputNode>(net.output_nodes_size);
+	for (Network::OutputNode& output_node : net.output_nodes) {
 		in_stream >> output_node;
-		net.output_nodes.push_back(output_node);
 	}
 	return in_stream;
+}
+
+Network Network::createRandom(const unsigned int input_node_count, const unsigned int middle_node_count, const unsigned int output_node_count) {
+	srand((unsigned int)time(NULL));
+
+	vector<InputNode> random_input_nodes;
+	random_input_nodes.reserve(input_node_count);
+	for (unsigned int input_node_index = 0; input_node_index < input_node_count; input_node_index++) {
+		vector<float> input_weights(middle_node_count);
+		for (unsigned int weight_index = 0; weight_index < middle_node_count; weight_index++) {
+			input_weights.at(weight_index) = random(-1, 1);
+		}
+		random_input_nodes.push_back(InputNode(random(-1, 1), input_weights));
+	}
+
+	vector<MiddleNode> random_middle_nodes;
+	random_middle_nodes.reserve(middle_node_count);
+	for (unsigned int middle_node_index = 0; middle_node_index < middle_node_count; middle_node_index++) {
+		const unsigned int weight_count = middle_node_count + output_node_count - 1;
+		vector<float> middle_weights(weight_count);
+		for (unsigned int weight_index = 0; weight_index < weight_count; weight_index++) {
+			middle_weights.at(weight_index) = random(-1, 1);
+		}
+		random_middle_nodes.push_back(MiddleNode(random(-1, 1), middle_weights, random(-1, 1)));
+	}
+
+	vector<OutputNode> random_output_nodes;
+	random_output_nodes.reserve(output_node_count);
+	for (unsigned int output_node_index = 0; output_node_index < output_node_count; output_node_index++) {
+		random_output_nodes.push_back(OutputNode(random(-1, 1), random(-1, 1)));
+	}
+
+	return Network(random_input_nodes, random_middle_nodes, random_output_nodes);
 }
 
 bool Network::save(const char* filename) {
@@ -143,14 +167,14 @@ bool Network::randomize() {
 		return false;
 	}
 	srand((unsigned int)time(NULL));
-	for (unsigned int i = 0; i < input_nodes_size; i++) {
-		input_nodes.at(i).randomize();
+	for (Network::InputNode& input_node : input_nodes) {
+		input_node.randomize();
 	}
-	for (unsigned int i = 0; i < middle_nodes_size; i++) {
-		middle_nodes.at(i).randomize();
+	for (Network::MiddleNode& middle_node : middle_nodes) {
+		middle_node.randomize();
 	}
-	for (unsigned int i = 0; i < output_nodes_size; i++) {
-		output_nodes.at(i).randomize();
+	for (Network::OutputNode& output_node : output_nodes) {
+		output_node.randomize();
 	}
 	return true;
 }
@@ -168,7 +192,7 @@ void Network::baseStep() {
 	// middle nodes send outputs
 	for (unsigned int sender_index = 0; sender_index < middle_nodes_size; sender_index++) {
 		bool sender_reached = false;
-		MiddleNode sender = middle_nodes.at(sender_index);
+		const MiddleNode& sender = middle_nodes.at(sender_index);
 		for (unsigned int middle_node_index = 0; middle_node_index < middle_nodes_size; middle_node_index++) {
 			if (sender_index != middle_node_index) {
 				middle_nodes.at(middle_node_index).inputSum += sender.current_value * sender.weights.at(middle_node_index - sender_reached);
@@ -238,7 +262,7 @@ void Network::sendInputs(const float inputs[]) {
 	mutex_lock.unlock();
 }
 
-bool Network::mutate(float scale) {
+bool Network::mutate(const float scale) {
 	if (thinking) {
 		return false;
 	}
