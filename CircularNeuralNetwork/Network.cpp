@@ -159,7 +159,7 @@ bool Network::load(const char* filename, Network& net) {
 	}
 	ifstream file_stream(filename);
 	file_stream >> net;
-	return file_stream.good();
+	return !file_stream.fail();
 }
 
 bool Network::randomize() {
